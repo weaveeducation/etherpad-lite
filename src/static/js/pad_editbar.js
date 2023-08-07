@@ -136,6 +136,7 @@ exports.padeditbar = new class {
     $('#editbar [data-key]').each((i, elt) => {
       $(elt).unbind('click');
       new ToolbarItem($(elt)).bind((command, item) => {
+        console.log('Trigger', command);
         this.triggerCommand(command, item);
       });
     });
@@ -192,7 +193,9 @@ exports.padeditbar = new class {
   }
   registerAceCommand(cmd, callback) {
     this.registerCommand(cmd, (cmd, ace, item) => {
+      console.log('registerCommand - 1', cmd);
       ace.callWithAce((ace) => {
+        console.log('registerCommand - 2 ', cmd);
         callback(cmd, ace, item);
       }, cmd, true);
     });
@@ -401,6 +404,7 @@ exports.padeditbar = new class {
     });
 
     const aceAttributeCommand = (cmd, ace) => {
+      console.log('registerCommand - 3 ', cmd);
       ace.ace_toggleAttributeOnSelection(cmd);
     };
     this.registerAceCommand('bold', aceAttributeCommand);
