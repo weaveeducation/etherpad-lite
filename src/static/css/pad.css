@@ -77,3 +77,41 @@ input {
   margin-left:auto;
   margin-right:auto;
 }
+
+.firepad-tooltip {
+    position: absolute;
+    padding: 5px 10px 5px 24px;
+    border-radius: 2px;
+    background-color: rgba(58, 58, 55, 0.9);
+    font-size: 10px;
+    font-weight: bold;
+    color: #fff;
+    pointer-events: none;
+}
+
+.firepad-tooltip::before {
+    display: inline-block;
+    content: '';
+    width: 12px;
+    height: 12px;
+    mask-size: cover;
+    background-color: #fff;
+    position: absolute;
+    top: 5px;
+    left: 8px;
+}
+
+.firepad-tooltip.firepad-commendation-tooltip::before {
+    mask: url(../img/commendation.svg) no-repeat center center;
+    -webkit-mask: url(../img/commendation.svg) no-repeat center center;
+}
+
+.firepad-tooltip.firepad-recommendation-tooltip::before {
+    mask: url(../img/recommendation.svg) no-repeat center center;
+    -webkit-mask: url(../img/recommendation.svg) no-repeat center center;
+}
+
+
+.firepad-btn-tooltip:hover span.commendationAndRecommendation::before {
+    display: block;
+}

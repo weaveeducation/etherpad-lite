@@ -1,5 +1,85 @@
 'use strict';
 
+let etherpadTooltips = [];
+let commendationsCaption = "Commendation";
+let recommendationsCaption = "Recommendation";
+
+window.addEventListener(
+    "message",
+    (event) => {
+
+        // console.log('CHILD - IFRAME', event.data);
+
+        if (event.origin !== "http://example.org:8080") return;
+
+        // …
+    },
+    false,
+);
+
+let cleanTooltips = () => {
+    // Close opened tooltips
+    etherpadTooltips.forEach(tooltip => {
+        $(tooltip).remove();
+    });
+    etherpadTooltips = [];
+}
+
+let addTooltip = (element, e) => {
+
+    // The tooltip will be added in the body of the top level iframe
+    const topLevelIframe = $('body')[0];
+
+    element = $(element)[0];
+    const etherpadTooltip = document.createElement("div");
+    let text = commendationsCaption;
+    etherpadTooltip.className = "firepad-tooltip firepad-commendation-tooltip";
+    if (element.classList.contains('recommendation')) {
+        text = recommendationsCaption;
+        etherpadTooltip.className = "firepad-tooltip firepad-recommendation-tooltip";
+    }
+    etherpadTooltip.textContent = text;
+
+    const topLeveIframeRect = topLevelIframe.getBoundingClientRect();
+    const hoveredElementRect = element.getBoundingClientRect();
+
+    // Get the position of the inner iframe
+    const parentFrame = $('iframe[name=ace_outer]')[0];
+    const parentContent = parentFrame.contentDocument || parentFrame.contentWindow.document;
+    const childFrame = $(parentContent).find('iframe[name=ace_inner]');
+    const childFrameRect = childFrame[0].getBoundingClientRect();
+
+    const x = childFrameRect.left + e.clientX; //x position within the element.
+    const y = childFrameRect.top + hoveredElementRect.top;  //y position within the element.
+
+    etherpadTooltip.style.left = (x) + "px";
+    etherpadTooltip.style.top = (y + 42) + "px";
+
+    etherpadTooltips.push(etherpadTooltip);
+    topLevelIframe.appendChild(etherpadTooltip);
+}
+
+
+let addHoverListeners = () => {
+    const padOuter = $('iframe[name="ace_outer"]').contents();
+    const padInner = padOuter.find('iframe[name="ace_inner"]');
+    padInner.contents().find('.commendation, .recommendation').off();
+    padInner.contents().find('.commendation, .recommendation')
+        .on('mouseenter', (e) => {
+
+            const target = e.target;
+            addTooltip($(target), e);
+
+            return false;
+        })
+        .on('mouseleave', (e) => {
+
+            cleanTooltips();
+
+            return false;
+        });
+};
+
 exports.postToolbarInit = (hookName, context) => {
     const editbar = context.toolbar;
 
@@ -39,7 +119,7 @@ exports.aceCreateDomLine = (name, context) => {
     // Set for 'commendation'
     const commendation = /(?:^| )commendation(\S*)/.exec(cls);
     if (commendation != null) {
-       const modifier = {
+        const modifier = {
             extraOpenTags: `<span class="commendation">`,
             extraCloseTags: '</span>',
             cls,
@@ -60,6 +140,17 @@ exports.aceCreateDomLine = (name, context) => {
 
     return [];
 };
+
+exports.postAceInit = (hook, context) => {
+    addHoverListeners();
+};
+
+exports.acePostWriteDomLineHTML = (hook, node) => {
+    setTimeout(() => {
+        addHoverListeners();
+    });
+
+}
 
 exports.collectContentPre = (hook, context) => {
     // Check for 'commendation'
