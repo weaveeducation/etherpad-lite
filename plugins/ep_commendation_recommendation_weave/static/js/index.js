@@ -1,21 +1,28 @@
 'use strict';
+const shared = require('./shared');
 
 let etherpadTooltips = [];
-let commendationsCaption = "Commendation";
-let recommendationsCaption = "Recommendation";
+let commendationsCaption = "-";
+let recommendationsCaption = "-";
 
-window.addEventListener(
-    "message",
-    (event) => {
+function updateCaptions(data) {
+    commendationsCaption = data.commendationsCaption;
+    recommendationsCaption = data.recommendationsCaption;
 
-        // console.log('CHILD - IFRAME', event.data);
+    // Update commendation
+    const commendationsElement = document.querySelector('.a-buttonicon-commendation');
+    if (commendationsElement) {
+        commendationsElement.title = "Highlight " + commendationsCaption;
+    }
 
-        if (event.origin !== "http://example.org:8080") return;
+    // Update recommendation
+    const recommendationsElement = document.querySelector('.a-buttonicon-recommendation');
+    if (recommendationsElement) {
+        recommendationsElement.title = "Highlight " + recommendationsCaption;
+    }
+}
 
-        // …
-    },
-    false,
-);
+shared.getCaptions(updateCaptions);
 
 let cleanTooltips = () => {
     // Close opened tooltips
@@ -167,3 +174,17 @@ exports.collectContentPre = (hook, context) => {
 };
 
 exports.aceEditorCSS = () => ['ep_commendation_recommendation_weave/static/css/main.css'];
+
+// Use this part of code to send http requests to Etherpad's server (those can be handled)
+// bty the server side hooks
+// setInterval(()=>{
+//     // Make an HTTP POST request to send data to the server
+//     fetch('/updateCaptions', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify(data),
+//     });
+//
+// }, 20000)
