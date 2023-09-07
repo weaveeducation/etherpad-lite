@@ -9,8 +9,8 @@ select, .nice-select {
   display: inline-block;
   font-family: inherit;
   font-weight: normal;
-  height: 28px;
-  line-height: 28px;
+  height: 49px;
+  line-height: 37px !important;
   outline: none;
   padding-left: 8px;
   padding-right: 24px;
@@ -26,8 +26,9 @@ select, .nice-select {
   min-width: 100px;
   text-transform: capitalize;
 }
-.nice-select:not(.open):not(:hover):focus {
-  border-color: #a5c8ec;
+.nice-select:focus {
+  /*border-color: #a5c8ec;*/
+  /*border: 2px solid #f8d97e;*/
 }
 .popup .nice-select {
   padding: 4px 24px 4px 8px;

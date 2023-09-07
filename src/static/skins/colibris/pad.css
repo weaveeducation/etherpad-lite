@@ -53,6 +53,9 @@
   /* Those padding like an external padding. Basic padding of 15px is always applied */
   --editor-horizontal-padding: 40px;
   --editor-vertical-padding: 25px;
+
+  --primary-button-background-color: #dac38b;
+  --primary-button-color: #372a04;
 }
 
 @media (max-width:1000px) {

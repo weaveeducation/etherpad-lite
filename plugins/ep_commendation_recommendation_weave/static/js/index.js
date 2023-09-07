@@ -22,7 +22,7 @@ function updateCaptions(data) {
     }
 }
 
-shared.getCaptions(updateCaptions);
+shared.parseWindowEvent(updateCaptions);
 
 let cleanTooltips = () => {
     // Close opened tooltips

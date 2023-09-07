@@ -1,15 +1,21 @@
 input[type="text"], select, textarea, .nice-select {
-  border-radius: 3px;
+  border-radius: 8px;
   box-shadow: none;
-  border: none;
+  /*border: none;*/
+  border: 2px solid #ddded6;
   outline: 0;
+}
+
+input[type="text"]:focus {
+  border: 2px solid #f8d97e;
 }
 
 input[type="text"], textarea {
   padding: 8px 10px;
-  background-color: #f2f3f4;
-  background-color: var(--bg-soft-color);
-  border: none;
+  background-color: #ffffff;
+  /*background-color: var(--bg-soft-color);*/
+  /*border: none;*/
+  border: 2px solid #ddded6;
   color: #485365;
   color: var(--text-color);
 }
@@ -18,16 +24,19 @@ input[type="text"]::placeholder, textarea::placeholder {
   color: var(--text-soft-color);
 }
 select, .nice-select {
-  background-color: #f2f3f4;
-  background-color: var(--bg-soft-color);
-  border: 1px solid var(--bg-soft-color);
+  /*background-color: #f2f3f4;*/
+  /*background-color: var(--bg-soft-color);*/
+  /*border: 1px solid var(--bg-soft-color);*/
+  background-color: #ffffff;
+  border: 2px solid #ddded6;
   padding: 4px 10px;
   padding-right: 25px;
-  font-weight: bold;
+  font-weight: 400;
   line-height: inherit;
 }
 select:hover, .nice-select:hover {
-  border-color: var(--bg-soft-color)
+  /*border-color: var(--bg-soft-color)*/
+  border-color: #f8d97e;
 }
 .nice-select .list {
   background-color: #f2f3f4;

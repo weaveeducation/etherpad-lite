@@ -1,0 +1,9 @@
+{
+    "ep_embedded_hyperlinks.editbarButtons.hyperlink.title": "Hyperlink",
+    "ep_embedded_hyperlinks.popup.label.link_text": "LINK TEXT",
+    "ep_embedded_hyperlinks.popup.label.evidence_file": "EVIDENCE FILE",
+    "ep_embedded_hyperlinks.popup.label.link_url": "LINK URL",
+    "ep_embedded_hyperlinks.popup.ok": "Insert Link",
+    "ep_embedded_hyperlinks.popup.remove": "Remove link",
+    "ep_embedded_hyperlinks.popup.cancel": "Cancel"
+}

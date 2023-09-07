@@ -6,18 +6,25 @@ button, .btn
   width: auto;
   border: none;
   font-weight: bold;
-  text-transform: uppercase;
+  /*text-transform: uppercase;*/
   position: relative;
   background: none;
   cursor: pointer;
+  font-family: "Catamaran", sans-serif;
+  font-size: 14px;
+  padding: 0.85em 1em;
+  font-weight: 400;
+  margin: 0px 5px;
 }
 
-.btn-primary
-{
-  background-color: #64d29b;
-  background-color: var(--primary-color);
-  color: #ffffff;
-  color: var(--bg-color);
+.btn-primary {
+  background-color: #fadb77;
+  color: #372a04;
+  border: 1px solid #f6c115;
+}
+.btn-secondary {
+  background-color: #ede6d6;
+  color: #372a04;
 }
 .btn-default {
   color: #485365;

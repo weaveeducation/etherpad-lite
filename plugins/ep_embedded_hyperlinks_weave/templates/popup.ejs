@@ -1,0 +1,119 @@
+<div class="popup acl-write hyperlink-dialog toolbar-popup popup">
+    <div class="hyperlink-container popup-content">
+
+        <div class="tab-group">
+            <div class="tab evidence-file active">Evidence file</div>
+            <div class="tab weblink">Weblink</div>
+        </div>
+
+        <div class="content-wrap">
+            <div class="input-wrap">
+                <label data-l10n-id="ep_embedded_hyperlinks.popup.label.link_text">LINK TEXT*</label>
+                <input type="text" class="input hyperlink-text"/>
+                <div class="error-message hyperlink-text" hidden>Please enter a link text.</div>
+            </div>
+
+            <div class="input-wrap evidence-file-wrapper">
+                <label data-l10n-id="ep_embedded_hyperlinks.popup.label.evidence_file">EVIDENCE FILE*</label>
+                <select class="input evidence-file" data-l10n-id="ep_embedded_hyperlinks.popup.label.evidence_files_list">
+                    <option value="" selected></option>
+                    <option value="volvo">Volvo</option>
+                    <option value="audi">Audi</option>
+                </select>
+                <div class="error-message evidence-file" hidden>Please choose an evidence file.</div>
+            </div>
+
+            <div class="input-wrap weblink-wrapper" hidden>
+                <label data-l10n-id="ep_embedded_hyperlinks.popup.label.link_url">LINK URL*</label>
+                <input type="text" class="input hyperlink-url" placeholder="http://..."/>
+                <div class="error-message hyperlink-url" hidden>Please enter a valid URL.</div>
+            </div>
+
+            <div class="action-btns-wrap">
+                <button type="button" class="btn btn-secondary hyperlink-cancel"
+                        data-l10n-id="ep_embedded_hyperlinks.popup.cancel">Cancel
+                </button>
+                <button type="button" class="btn btn-primary hyperlink-save"
+                        data-l10n-id="ep_embedded_hyperlinks.popup.ok">Insert link
+                </button>
+                <button type="button" class="btn btn-primary hyperlink-remove"
+                        data-l10n-id="ep_embedded_hyperlinks.popup.remove">Remove link
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tab-group {
+        display: flex;
+        border-bottom: 1px solid #cccccc;
+    }
+
+    .tab {
+        padding: 10px 20px;
+        font-size: 14px;
+        color: #4b4c45;
+        cursor: pointer;
+    }
+
+    .tab.active {
+        border-bottom: 2px solid #4b4c47;
+    }
+
+    .input ul {
+        width: 100%;
+    }
+
+    .content-wrap {
+        width: 100%;
+        margin-top: 25px;
+    }
+
+    .input-wrap {
+        display: block;
+        width: 100%;
+        margin-bottom: 40px;
+    }
+
+    .input-wrap label {
+        display: block;
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+
+    .input {
+        display: inline-block;
+        clear: both;
+        width: 100%;
+    }
+
+    .hyperlink-dialog.popup {
+        position: absolute;
+        top: 50% !important;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 4px;
+        box-shadow: 0px 0px 0px 10000px rgba(0, 0, 0, 0.32);
+    }
+
+    .action-btns-wrap {
+        text-align: center;
+    }
+
+    .centered-buttons {
+        display: flex;
+        justify-content: center;
+    }
+
+    .error-message {
+        width: 100%;
+        background-color: #b21716;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 400;
+        padding: 9px 15px 7px;
+        margin: 5px 0px;
+        border-radius: 8px;
+    }
+</style>
