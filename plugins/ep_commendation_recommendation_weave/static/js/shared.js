@@ -1,4 +1,4 @@
-function getCaptions(cd) {
+function parseWindowEvent(cd) {
     window.addEventListener(
         "message",
         (event) => {
@@ -17,7 +17,7 @@ function getCaptions(cd) {
 }
 
 module.exports = {
-    getCaptions
+    parseWindowEvent
 }
 
 
