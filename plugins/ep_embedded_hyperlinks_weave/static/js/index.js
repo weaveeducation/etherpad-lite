@@ -8,7 +8,6 @@ let evidenceFilesSupport = false;
 function getEvidenceFiles(data) {
     evidenceFiles = data.evidenceFiles;
     evidenceFilesSupport = data.evidenceFilesSupport;
-    console.log('getEvidenceFiles', data.evidenceFilesSupport, data.evidenceFiles);
 }
 
 shared.parseWindowEvent(getEvidenceFiles);
@@ -18,42 +17,123 @@ function isValidURL(url) {
     return pattern.test(url);
 }
 
-let showDialog = function () {
-    const curLine = (this.rep.lines.atIndex(this.rep.selEnd[0])).lineNode;
-    // $('.hyperlink-dialog').css('top', $(curLine).offset().top + $(curLine).height());
-    $('.hyperlink-dialog').addClass('popup-show');
+let prepareOptionElem = function (guid, text, isSelected) {
+    const ulElement = $('<li>');
+    ulElement.addClass('evidence-file option');
 
-    if (!$('.hyperlink-text').val()) {
+    if(isSelected) {
+        ulElement.addClass('selected');
+    }
+
+    if (guid)
+        $(ulElement).data('guid', guid);
+
+    ulElement.text(text);
+    return ulElement;
+}
+
+let showDialog = function (text, type, value) {
+    // const curLine = (this.rep.lines.atIndex(this.rep.selEnd[0])).lineNode;
+    // $('.hyperlink-dialog').css('top', $(curLine).offset().top + $(curLine).height());
+
+    // Initialize popup's tabs
+    $('.tab.evidence-file').show();
+    $('.tab.weblink').show();
+    $('.tab.evidence-file').click();
+    $('.btn-primary.hyperlink-save').text('Insert link');
+
+    // Check if evidence file tab is visible
+    if (evidenceFilesSupport) {
+        $('.tab.evidence-file').show();
+        $('.tab.evidence-file').click();
+
+        // Remove previous set elements
+        $('.input.evidence-file .current').text('');
+        $('.input.evidence-file ul').empty();
+
+        // Add an empty element
+        $('.input.evidence-file ul').append(prepareOptionElem(undefined, '', true));
+
+        // Set new elements
+        evidenceFiles.forEach(option => {
+            $('.input.evidence-file ul').append(prepareOptionElem(option['evidenceGuid'], option['filename']));
+        });
+
+    } else {
+        $('.tab.evidence-file').hide();
+        $('.tab.weblink').click();
+    }
+
+    // Hide all error messages
+    $('.error-message.evidence-file').hide();
+    $('.error-message.hyperlink-url').hide();
+    $('.error-message.hyperlink-text').hide();
+
+    // Show remove button only if an url is set (Weblink tab) or an evidence file is selected (Evidence file tab)
+    if (!value) {
         $('.hyperlink-remove').hide();
     } else {
         $('.hyperlink-remove').show();
     }
 
-    $('.error-message.evidence-file').hide();
-    $('.error-message.hyperlink-url').hide();
-    $('.error-message.hyperlink-text').hide();
+    // Set text value only if was set
+    if (text)
+        $('.hyperlink-text').val(text);
 
-    // Check if evidence file tab is visible
-    if (evidenceFilesSupport) {
-        $('.tab.evidence-file').show();
-        $('.evidence-file').click();
+    // Set urls
+    if (type && type == 'weblink') {
+        $('.hyperlink-url').val(value);
 
-        // Remove previous set elements
-        $('.input.evidence-file ul').empty();
-
-        // Set new elements
-        evidenceFiles.forEach(option => {
-            const ulElement = $('<li>');
-            ulElement.addClass('evidence-file option');
-            $(ulElement).data('value', option['evidenceGuid']);
-            ulElement.text(option['filename']);
-            $('.input.evidence-file ul').append(ulElement);
-        });
-
-    } else {
+        $('.btn-primary.hyperlink-save').text('Update link');
         $('.tab.evidence-file').hide();
-        $('.weblink').click();
+        $('.tab.weblink').click();
     }
+
+    if (type && type == 'evidence-file' && value) {
+        $('.evidence-file.option.selected').removeClass('selected');
+
+        for (i = 0; i < $('.input.evidence-file li').length; i++) {
+            if ($($('.input.evidence-file li')[i]).data('guid') == value) {
+                $('.input.evidence-file li')[i].click();
+                $('.evidence-file.open').removeClass('open');
+                break;
+            }
+        }
+
+        $('.btn-primary.hyperlink-save').text('Update link');
+        $('.tab.weblink').hide();
+        $('.tab.evidence-file').click();
+    }
+
+    $('.hyperlink-dialog').addClass('popup-show');
+};
+
+let prepareShowDialog = function () {
+    $('.hyperlink-text').val('');
+    $('.hyperlink-url').val('');
+
+    if (evidenceFilesSupport) {
+        // Clean up selected file
+        $('.evidence-file.option.selected').removeClass('selected')
+    }
+
+    const padOuter = $('iframe[name="ace_outer"]').contents();
+    const padInner = padOuter.find('iframe[name="ace_inner"]').contents()[0];
+    const selection = padInner.getSelection();
+    $('.hyperlink-text').val(selection.toString());
+    showDialog();
+}
+
+let hideDialog = function () {
+    $('.hyperlink-text').val('');
+    $('.hyperlink-url').val('');
+
+    if (evidenceFilesSupport) {
+        // Clean up selected file
+        $('.evidence-file.option.selected').removeClass('selected')
+    }
+
+    $('.hyperlink-dialog').removeClass('popup-show');
 };
 
 let addLinkListeners = () => {
@@ -66,12 +146,28 @@ let addLinkListeners = () => {
         range.selectNodeContents($(e.target)[0]);
         selection.removeAllRanges();
         selection.addRange(range);
-        $('.hyperlink-text').val($(e.target).text());
-        $('.hyperlink-url').val($(e.target).attr('href'));
+
+        // Show either Evidence file tab or Weblink tab only
+        // If a tag has url set then show Weblink tab
+        // else if a tag had guid set then show Evidence file tab
+        const guid = $(e.currentTarget).data('guid');
+        const url = $(e.currentTarget).data('url');
+
+        const text = $(e.target).text();
+        let type = '';
+        let value = '';
+        if (guid) {
+            type = 'evidence-file';
+            value = guid;
+        } else if (url) {
+            type = 'weblink';
+            value = url;
+        }
+
         padInner.contents().on('click', () => {
-            $('.hyperlink-dialog').removeClass('popup-show');
+            hideDialog();
         });
-        showDialog();
+        showDialog(text, type, value);
         e.preventDefault();
         return false;
     });
@@ -88,14 +184,7 @@ exports.postToolbarInit = (hookName, args) => {
     const editbar = args.toolbar;
 
     editbar.registerCommand('addHyperlink', () => {
-        $('.hyperlink-text').val('');
-        $('.hyperlink-url').val('');
-
-        const padOuter = $('iframe[name="ace_outer"]').contents();
-        const padInner = padOuter.find('iframe[name="ace_inner"]').contents()[0];
-        const selection = padInner.getSelection();
-        $('.hyperlink-text').val(selection.toString());
-        showDialog();
+        prepareShowDialog();
     });
 };
 
@@ -110,14 +199,7 @@ exports.postAceInit = (hook, context) => {
     }
     /* Event: User clicks editbar button */
     $('.hyperlink-icon').on('click', () => {
-        $('.hyperlink-text').val('');
-        $('.hyperlink-url').val('');
-
-        const padOuter = $('iframe[name="ace_outer"]').contents();
-        const padInner = padOuter.find('iframe[name="ace_inner"]').contents()[0];
-        const selection = padInner.getSelection();
-        $('.hyperlink-text').val(selection.toString());
-        showDialog();
+        prepareShowDialog();
     });
 
     $('.evidence-file').on('click', () => {
@@ -147,13 +229,12 @@ exports.postAceInit = (hook, context) => {
         let evidenceFileId = ' ';
         let data = '';
         if (dialogActiveTab == 'evidence-file') {
-            evidenceFileId = $('.evidence-file.option.selected').data('value');
-            console.log('url', url);
-
+            evidenceFileId = $('.evidence-file.option.selected').data('guid');
             !evidenceFileId ? $('.error-message.evidence-file').show() : $('.error-message.evidence-file').hide();
+
             data = {
                 type: 'evidence-file',
-                value: evidenceFileId,
+                value: evidenceFileId, // In the case of evidence-file pass a guid as value
             };
             data = JSON.stringify(data);
 
@@ -162,11 +243,11 @@ exports.postAceInit = (hook, context) => {
             if (!(/^http:\/\//.test(url)) && !(/^https:\/\//.test(url))) {
                 url = `http://${url}`;
             }
-
             !isValidURL(url) ? $('.error-message.hyperlink-url').show() : $('.error-message.hyperlink-url').hide();
+
             data = {
                 type: 'weblink',
-                value: url,
+                value: url, // In the case of weblink pass url as a value
             };
             data = JSON.stringify(data);
         }
@@ -182,32 +263,26 @@ exports.postAceInit = (hook, context) => {
             const start = rep.selStart;
             ace.ace_replaceRange(start, rep.selEnd, text);
             ace.ace_performSelectionChange(start, [start[0], start[1] + text.length], true);
-            if (ace.ace_getAttributeOnSelection('url')) {
-                ace.ace_setAttributeOnSelection('url', false);
+            if (ace.ace_getAttributeOnSelection('data')) {
+                ace.ace_setAttributeOnSelection('data', false);
             } else {
-                ace.ace_setAttributeOnSelection('url', data);
+                ace.ace_setAttributeOnSelection('data', data);
             }
         }, 'insertLink', true);
-        $('.hyperlink-text').val('');
-        $('.hyperlink-url').val('');
-        $('.hyperlink-dialog').removeClass('popup-show');
+        hideDialog();
         addLinkListeners();
     });
 
     $('.hyperlink-remove').on('click', () => {
         context.ace.callWithAce((ace) => {
-            ace.ace_setAttributeOnSelection('url', false);
+            ace.ace_setAttributeOnSelection('data', false);
         }, 'removeLink', true);
-        $('.hyperlink-text').val('');
-        $('.hyperlink-url').val('');
-        $('.hyperlink-dialog').removeClass('popup-show');
+        hideDialog();
         addLinkListeners();
     });
 
     $('.hyperlink-cancel').on('click', () => {
-        $('.hyperlink-text').val('');
-        $('.hyperlink-url').val('');
-        $('.hyperlink-dialog').removeClass('popup-show');
+        hideDialog();
     });
 
     /* User press Enter on url input */
@@ -226,24 +301,14 @@ exports.acePostWriteDomLineHTML = () => {
 };
 
 exports.aceAttribsToClasses = (hook, context) => {
-    if (context.key === 'url') {
-        console.log(context);
-        // console.log(JSON.parse(context));
-        //
+    if (context.key === 'data') {
+
+        if (context.value == 'false')
+            return ['data', `type-false`, `data-false`];
+
         const data = JSON.parse(context.value);
 
-        // let url = /(?:^| )url-(\S*)/.exec(context.value);
-        // if (!url) {
-        //     console.log('1a', context.value);
-        //
-        //     url = context.value;
-        // } else {
-        //     console.log('1b', url);
-        //
-        //     url = url[1];
-        // }
-
-        return ['url', `type-${data.type}`,`url-${data.value}`];
+        return ['data', `type-${data.type}`, `data-${data.value}`];
     }
 };
 
@@ -251,24 +316,28 @@ exports.aceAttribsToClasses = (hook, context) => {
 exports.aceCreateDomLine = (name, context) => {
 
     const cls = context.cls;
-    let url = /(?:^| )url-(\S*)/.exec(cls);
+
+    let data = /(?:^| )data-(\S*)/.exec(cls);
     let type = /(?:^| )type-(\S*)/.exec(cls);
-    console.log('Type', type)
 
     let modifier = {};
-
-    if (url != null && url[1] != 'false') {
-        // We need this only in the case we want to click on the <a> tag and open the page/file
-        // url = url[1];
-        // if (!(/^http:\/\//.test(url)) && !(/^https:\/\//.test(url))) {
-        //     url = `'http://${url}`;
-        // }
-
-        modifier = {
-            extraOpenTags: `<a href="#">`,
-            extraCloseTags: '</a>',
-            cls,
-        };
+    if (data != null && data != 'undefined' && data[1] != 'false') {
+        if (type[1] === 'evidence-file') {
+            modifier = {
+                extraOpenTags: `<a href="#" data-guid="` + data[1] + `">`,
+                extraCloseTags: '</a>',
+                cls,
+            };
+        } else if (type[1] === 'weblink') {
+            modifier = {
+                extraOpenTags: `<a href="#" data-url="` + data[1] + `">`,
+                extraCloseTags: '</a>',
+                cls,
+            };
+        } else {
+            console.log('You have to check this!');
+            modifier = [];
+        }
 
         return modifier;
     }
@@ -282,7 +351,7 @@ exports.aceInitialized = (hook, context) => {
 };
 
 exports.collectContentPre = (hook, context) => {
-    //
+
     // console.log(hook, context);
     //
     // const url = /(?:^| )url-(\S*)/.exec(context.cls);
