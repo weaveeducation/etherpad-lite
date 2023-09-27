@@ -12,9 +12,15 @@ let evidenceImagesSupport = false;
 
 function getEvidenceImages(data) {
     evidenceImages = data.evidenceFiles;
+
+    // Keep online images
+    evidenceImages = evidenceImages.filter((evidenceFile)=>{
+        return evidenceFile.filename.match(/.(jpg|jpeg|png|gif)$/i) && !evidenceFile.isArchived;
+    });
+
     evidenceImagesSupport = data.evidenceFilesSupport;
 
-    console.log('Image upload', data);
+    console.log('Image upload', evidenceImages);
 }
 
 shared.parseWindowEvent(getEvidenceImages);
@@ -75,99 +81,60 @@ exports.aceInitialized = (hook, context) => {
 
 exports.aceRegisterBlockElements = () => ['img'];
 
+let prepareOptionElem = function (guid, text, isSelected) {
+    const ulElement = $('<li>');
+    ulElement.addClass('evidence-images option');
+
+    if(isSelected) {
+        ulElement.addClass('selected');
+    }
+
+    if (guid)
+        $(ulElement).data('guid', guid);
+
+    ulElement.text(text);
+    return ulElement;
+}
 let showDialog = function (text, type, value) {
 
     // Initialize popup's tabs
-    $('.tab.evidence-file').show();
-    $('.tab.weblink').show();
-    $('.tab.evidence-file').click();
-    $('.btn-primary.hyperlink-save').text('Insert link');
+    $('.tab.evidence-images').show();
+    $('.tab.image-url').show();
 
     // Check if evidence file tab is visible
     if (evidenceFilesSupport) {
-        $('.tab.evidence-file').show();
-        $('.tab.evidence-file').click();
+        $('.tab.evidence-images').show();
+        $('.tab.evidence-images').click();
 
         // Remove previous set elements
-        $('.input.evidence-file .current').text('');
-        $('.input.evidence-file ul').empty();
+        $('.input.evidence-images .current').text('');
+        $('.input.evidence-images ul').empty();
+        $('.evidence-images.option.selected').removeClass('selected')
 
         // Add an empty element
-        $('.input.evidence-file ul').append(prepareOptionElem(undefined, '', true));
+        $('.input.evidence-images ul').append(prepareOptionElem(undefined, '', true));
 
         // Set new elements
         evidenceFiles.forEach(option => {
-            $('.input.evidence-file ul').append(prepareOptionElem(option['evidenceGuid'], option['filename']));
+            $('.input.evidence-images ul').append(prepareOptionElem(option['evidenceGuid'], option['filename']));
         });
 
     } else {
-        $('.tab.evidence-file').hide();
-        $('.tab.weblink').click();
+        $('.tab.evidence-images').hide();
+        $('.tab.image-url').click();
     }
+
+    // Clean up url text
+    $('.input.image-url').val('');
 
     // Hide all error messages
-    $('.error-message.evidence-file').hide();
-    $('.error-message.hyperlink-url').hide();
-    $('.error-message.hyperlink-text').hide();
+    $('.error-message.evidence-images').hide();
+    $('.error-message.upload-image').hide(); // Add message in the popup
+    $('.error-message.image-url').hide();
 
-    // Show remove button only if an url is set (Weblink tab) or an evidence file is selected (Evidence file tab)
-    if (!value) {
-        $('.hyperlink-remove').hide();
-    } else {
-        $('.hyperlink-remove').show();
-    }
-
-    // Set text value only if was set
-    if (text)
-        $('.hyperlink-text').val(text);
-
-    // Set urls
-    if (type && type == 'weblink') {
-        $('.hyperlink-url').val(value);
-
-        $('.btn-primary.hyperlink-save').text('Update link');
-        $('.tab.evidence-file').hide();
-        $('.tab.weblink').click();
-    }
-
-    if (type && type == 'evidence-file' && value) {
-        $('.evidence-file.option.selected').removeClass('selected');
-
-        for (i = 0; i < $('.input.evidence-file li').length; i++) {
-            if ($($('.input.evidence-file li')[i]).data('guid') == value) {
-                $('.input.evidence-file li')[i].click();
-                $('.evidence-file.open').removeClass('open');
-                break;
-            }
-        }
-
-        $('.btn-primary.hyperlink-save').text('Update link');
-        $('.tab.weblink').hide();
-        $('.tab.evidence-file').click();
-    }
-
-    $('.hyperlink-dialog').addClass('popup-show');
+    $('.image-upload-dialog').addClass('popup-show');
 };
 
-let prepareShowDialog = function () {
-    // Initialize tab
-    $('.tab.evidence-images').click();
-    $('.image-upload-dialog').addClass('popup-show');
-
-    // $('.hyperlink-text').val('');
-    // $('.hyperlink-url').val('');
-    //
-    // if (evidenceFilesSupport) {
-    //     // Clean up selected file
-    //     $('.evidence-file.option.selected').removeClass('selected')
-    // }
-    //
-    // const padOuter = $('iframe[name="ace_outer"]').contents();
-    // const padInner = padOuter.find('iframe[name="ace_inner"]').contents()[0];
-    // const selection = padInner.getSelection();
-    // $('.hyperlink-text').val(selection.toString());
-    // showDialog();
-}
 let hideDialog = function () {
     $('.hyperlink-text').val('');
     $('.hyperlink-url').val('');
@@ -213,7 +180,7 @@ exports.postAceInit = (hook, context) => {
 
     /* Event: User clicks editbar button */
     $('.image-upload-toolbar').on('click', () => {
-        prepareShowDialog();
+        showDialog();
     });
 
     /* Event: User click on Evidence image tab (evidence-images) */
