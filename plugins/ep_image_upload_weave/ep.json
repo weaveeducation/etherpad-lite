@@ -3,12 +3,13 @@
     {
       "name": "ep_image_upload_weave",
       "client_hooks": {
+        "postAceInit" : "ep_image_upload_weave/static/js/index",
         "postToolbarInit": "ep_image_upload_weave/static/js/toolbar",
-        "aceAttribsToClasses" : "ep_image_upload_weave/static/js/clientHooks",
-        "aceDomLineProcessLineAttributes" : "ep_image_upload_weave/static/js/clientHooks",
-        "aceInitialized": "ep_image_upload_weave/static/js/clientHooks",
-        "aceRegisterBlockElements": "ep_image_upload_weave/static/js/clientHooks",
-        "aceEditorCSS": "ep_image_upload_weave/static/js/clientHooks",
+        "aceAttribsToClasses" : "ep_image_upload_weave/static/js/index",
+        "aceDomLineProcessLineAttributes" : "ep_image_upload_weave/static/js/index",
+        "aceInitialized": "ep_image_upload_weave/static/js/index",
+        "aceRegisterBlockElements": "ep_image_upload_weave/static/js/index",
+        "aceEditorCSS": "ep_image_upload_weave/static/js/index",
         "collectContentImage": "ep_image_upload_weave/static/js/contentCollection",
         "collectContentPre": "ep_image_upload_weave/static/js/contentCollection",
         "ccRegisterBlockElements": "ep_image_upload_weave/static/js/contentCollection",
@@ -26,7 +27,8 @@
         "collectContentPost": "ep_image_upload_weave/static/js/contentCollection",
         "ccRegisterBlockElements": "ep_image_upload_weave/static/js/contentCollection",
         "loadSettings": "ep_image_upload_weave/settings",
-        "padRemove": "ep_image_upload_weave/index"
+        "padRemove": "ep_image_upload_weave/index",
+        "eejsBlock_editorContainerBox": "ep_image_upload_weave/index"
       }
     }
   ]

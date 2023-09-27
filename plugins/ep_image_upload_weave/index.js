@@ -168,3 +168,8 @@ exports.padRemove = async (hookName, context) => {
     await fs.promises.rmdir(dir, {recursive: true});
   }
 };
+
+exports.eejsBlock_editorContainerBox = function (hook_name, args, cb) {
+  args.content = args.content + eejs.require("ep_image_upload_weave/templates/popup.ejs", {}, module);
+  return cb();
+}

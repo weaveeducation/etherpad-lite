@@ -1,34 +1,40 @@
-<div class="popup acl-write dialog toolbar-popup">
+<div class="popup acl-write image-upload-dialog toolbar-popup">
     <div class="hyperlink-container popup-content">
 
         <div class="tab-group">
-            <div class="tab tab-1 active">Evidence image</div>
-            <div class="tab tab-2">Image URL</div>
+            <div class="tab evidence-images active">Evidence image</div>
+            <div class="tab image-url">Image URL</div>
         </div>
 
         <div class="content-wrap">
 
-            <div class="input-wrap tab-1-wrapper">
-                <label data-l10n-id="ep_image_upload_weave.popup.label.tab_1">EVIDENCE FILE*</label>
-                <select class="input tab-1" data-l10n-id="ep_image_upload_weave.popup.label.evidence_files_list">
+            <div class="input-wrapper evidence-images">
+                <label data-l10n-id="ep_image_upload_weave.popup.label.tab_1">EVIDENCE IMAGE*</label>
+                <select class="input evidence-images"
+                        data-l10n-id="ep_image_upload_weave.popup.label.evidence_files_list">
                     <option value="" selected></option>
-                    <option value="volvo">Volvo</option>
-                    <option value="audi">Audi</option>
                 </select>
-                <div class="error-message tab-1" hidden>Please choose an evidence image.</div>
+                <div class="error-message evidence-images" hidden>Please choose an evidence image.</div>
+
             </div>
 
-            <div class="input-wrap tab-2-wrapper" hidden>
+            <div id="uploadWrapper" class="input-wrapper upload-image">
+                <p class="header">Drop a file to instantly upload it</p>
+                <div class="ion-android-upload ionicon upload-icon"></div>
+                <p class="subheader">Or click <span>here</span> to choose a file from your computer</p>
+            </div>
+
+            <div class="input-wrapper image-url" hidden>
                 <label data-l10n-id="ep_image_upload_weave.popup.label.link_url">IMAGE URL*</label>
                 <input type="text" class="input url" placeholder="http://..."/>
-                <div class="error-message tab-2" hidden>Please enter a valid URL.</div>
+                <div class="error-message image-url" hidden>Please enter a valid URL.</div>
             </div>
 
             <div class="action-btns-wrap">
-                <button type="button" class="btn btn-secondary cancel"
+                <button type="button" class="btn btn-secondary cancel-image-btn"
                         data-l10n-id="ep_image_upload_weave.popup.cancel">Cancel
                 </button>
-                <button type="button" class="btn btn-primary save"
+                <button type="button" class="btn btn-primary insert-image-btn"
                         data-l10n-id="ep_image_upload_weave.popup.insertImage">Insert image
                 </button>
             </div>
@@ -62,13 +68,13 @@
         margin-top: 25px;
     }
 
-    .input-wrap {
+    .input-wrapper {
         display: block;
         width: 100%;
         margin-bottom: 40px;
     }
 
-    .input-wrap label {
+    .input-wrapper label {
         display: block;
         font-size: 12px;
         margin-bottom: 10px;
@@ -80,7 +86,7 @@
         width: 100%;
     }
 
-    .dialog.popup {
+    .image-upload-dialog.popup {
         position: absolute;
         top: 50% !important;
         left: 50%;
@@ -97,6 +103,33 @@
         display: flex;
         justify-content: center;
     }
+
+    .input-wrapper.upload-image {
+        text-align: center;
+
+        & .header {
+
+        }
+
+        & .subheader {
+            margin-top: 0.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: normal;
+            line-height: 1.4;
+            color: #8a8a8a;
+
+            & span {
+                text-decoration: underline;
+                cursor: pointer;
+            }
+        }
+    }
+
+    .file-over {
+        opacity: .8;
+        background: #faf8f3;
+    }
+
 
     .error-message {
         width: 100%;
