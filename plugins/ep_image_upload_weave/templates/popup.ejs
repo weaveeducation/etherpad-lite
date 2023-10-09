@@ -19,9 +19,10 @@
             </div>
 
             <div id="uploadWrapper" class="input-wrapper upload-image">
-                <p class="header">Drop a file to instantly upload it</p>
-                <div class="ion-android-upload ionicon upload-icon"></div>
-                <p class="subheader">Or click <span>here</span> to choose a file from your computer</p>
+                <p class="header" style="pointer-events: none">Drop a file to instantly upload it</p>
+                <div class="ion-android-upload ionicon upload-icon" style="pointer-events: none"></div>
+                <p class="subheader" style="pointer-events: none">Or click <span id="uploadWrapperOnclick" class="upload-file-on-click-area">here</span>
+                    to choose a file from your computer</p>
             </div>
 
             <div class="input-wrapper image-url" hidden>
@@ -130,6 +131,10 @@
         background: #faf8f3;
     }
 
+    .upload-file-on-click-area {
+        pointer-events: auto;
+        cursor: pointer;
+    }
 
     .error-message {
         width: 100%;

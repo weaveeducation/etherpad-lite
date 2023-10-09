@@ -189,6 +189,9 @@ exports.postToolbarInit = (hookName, args) => {
 };
 
 exports.postAceInit = (hook, context) => {
+
+    console.log('hyperlink', hook, context);
+
     if (!$('#editorcontainerbox').hasClass('flex-layout')) {
         $.gritter.add({
             title: 'Error',
@@ -229,9 +232,6 @@ exports.postAceInit = (hook, context) => {
         let evidenceFileId = ' ';
         let data = '';
         if (dialogActiveTab == 'evidence-file') {
-            evidenceFileId = $('.evidence-file.option.selected').data('guid');
-            !evidenceFileId ? $('.error-message.evidence-file').show() : $('.error-message.evidence-file').hide();
-
             data = {
                 type: 'evidence-file',
                 value: evidenceFileId, // In the case of evidence-file pass a guid as value
@@ -310,39 +310,6 @@ exports.aceAttribsToClasses = (hook, context) => {
 
         return ['data', `type-${data.type}`, `data-${data.value}`];
     }
-};
-
-/* Convert the classes into a tag */
-exports.aceCreateDomLine = (name, context) => {
-
-    const cls = context.cls;
-
-    let data = /(?:^| )data-(\S*)/.exec(cls);
-    let type = /(?:^| )type-(\S*)/.exec(cls);
-
-    let modifier = {};
-    if (data != null && data != 'undefined' && data[1] != 'false') {
-        if (type[1] === 'evidence-file') {
-            modifier = {
-                extraOpenTags: `<a href="#" data-guid="` + data[1] + `">`,
-                extraCloseTags: '</a>',
-                cls,
-            };
-        } else if (type[1] === 'weblink') {
-            modifier = {
-                extraOpenTags: `<a href="#" data-url="` + data[1] + `">`,
-                extraCloseTags: '</a>',
-                cls,
-            };
-        } else {
-            console.log('You have to check this!');
-            modifier = [];
-        }
-
-        return modifier;
-    }
-
-    return [];
 };
 
 exports.aceInitialized = (hook, context) => {

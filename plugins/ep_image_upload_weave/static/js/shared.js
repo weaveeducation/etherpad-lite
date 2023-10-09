@@ -16,8 +16,16 @@ function parseWindowEvent(cd) {
     );
 }
 
+function sendWindowEvent(file) {
+    window.parent.postMessage({
+        target: 'etherpad-editor',
+        files: file
+    }, 'https://w4s.sitefpo.com');
+}
+
 module.exports = {
-    parseWindowEvent
+    parseWindowEvent,
+    sendWindowEvent
 }
 
 
