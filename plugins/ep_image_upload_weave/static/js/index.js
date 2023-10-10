@@ -144,6 +144,15 @@ let addUploadHandler = function () {
     });
 }
 
+let addImageListeners = () => {
+    const padOuter = $('iframe[name="ace_outer"]').contents();
+    const padInner = padOuter.find('iframe[name="ace_inner"]');
+    padInner.contents().find('img').off();
+    padInner.contents().find('img').on('click', (e)=>{
+        console.log('I feel Lucky here');
+    });
+}
+
 const _handleNewLines = (ace) => {
     const rep = ace.ace_getRep();
     const lineNumber = rep.selStart[0];
@@ -373,8 +382,8 @@ exports.postAceInit = (hook, context) => {
             ace.ace_doReturnKey();
         }, 'img', true);
 
+        addImageListeners();
         hideDialog();
     })
-
 }
 
