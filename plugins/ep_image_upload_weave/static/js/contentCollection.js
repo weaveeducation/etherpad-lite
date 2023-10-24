@@ -3,6 +3,7 @@
 // When an image is detected give it a lineAttribute
 // of Image with the URL to the iamge
 exports.collectContentImage = (hookName, {node, state: {lineAttributes}, tname}) => {
+    console.log('collectContentImage')
 
     if (tname === 'div' || tname === 'p') delete lineAttributes.img;
     if (tname !== 'img') return;

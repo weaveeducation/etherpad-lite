@@ -1,0 +1,81 @@
+<div class="popup acl-write image-resizer-dialog toolbar-popup">
+    <div class="popup-content">
+
+        <h2>Resize image</h2>
+
+        <div class="input-wrapper">
+            <label data-l10n-id="ep_image_upload_weave.resizer_popup.label.image_width">WIDTH*</label>
+            <input type="number" class="input image-width"/>
+        </div>
+
+        <div class="input-wrapper">
+            <label data-l10n-id="ep_image_upload_weave.resizer_popup.label.link_height">HEIGHT*</label>
+            <input type="number" class="input image-height"/>
+        </div>
+
+        <div class="action-btns-wrap">
+            <button type="button" class="btn btn-secondary cancel-image-resizer-btn"
+                    data-l10n-id="ep_image_upload_weave.resizer_popup.cancel">Cancel
+            </button>
+            <button type="button" class="btn btn-primary update-image-resizer-btn"
+                    data-l10n-id="ep_image_upload_weave.resizer_popup.insertImage">Update image size
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<style>
+
+    .image-resizer-dialog.popup {
+        position: absolute;
+        top: 50% !important;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 4px;
+        box-shadow: 0px 0px 0px 10000px rgba(0, 0, 0, 0.32);
+    }
+
+    .image-resizer-dialog {
+        & .input ul {
+            width: 100%;
+        }
+
+
+        & .input-wrapper {
+            display: block;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        & .input-wrapper label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        & .input {
+            display: inline-block;
+            clear: both;
+            width: 100%;
+        }
+
+        & .action-btns-wrap {
+            text-align: center;
+        }
+
+        & .input-wrapper {
+            display: grid;
+            grid-template-columns: 80px minmax(0, 1fr);
+            align-items: center;
+        }
+
+        & .input-wrapper label {
+            margin-bottom: 0px;
+        }
+
+        & .popup input[type=number] {
+            margin-top: 0px;
+        }
+    }
+</style>

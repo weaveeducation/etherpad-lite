@@ -1,4 +1,4 @@
-input[type="text"], select, textarea, .nice-select {
+input[type="text"], input[type="number"], select, textarea, .nice-select {
   border-radius: 8px;
   box-shadow: none;
   /*border: none;*/
@@ -6,11 +6,11 @@ input[type="text"], select, textarea, .nice-select {
   outline: 0;
 }
 
-input[type="text"]:focus {
+input[type="text"]:focus, input[type="number"]:focus {
   border: 2px solid #f8d97e;
 }
 
-input[type="text"], textarea {
+input[type="text"], input[type="number"], textarea {
   padding: 8px 10px;
   background-color: #ffffff;
   /*background-color: var(--bg-soft-color);*/
@@ -19,7 +19,7 @@ input[type="text"], textarea {
   color: #485365;
   color: var(--text-color);
 }
-input[type="text"]::placeholder, textarea::placeholder {
+input[type="text"]::placeholder, input[type="number"]::placeholder, textarea::placeholder {
   color: #576273;
   color: var(--text-soft-color);
 }

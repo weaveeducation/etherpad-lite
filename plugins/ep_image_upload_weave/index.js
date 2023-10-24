@@ -171,5 +171,6 @@ exports.padRemove = async (hookName, context) => {
 
 exports.eejsBlock_editorContainerBox = function (hook_name, args, cb) {
   args.content = args.content + eejs.require("ep_image_upload_weave/templates/popup.ejs", {}, module);
+  args.content = args.content + eejs.require("ep_image_upload_weave/templates/resizer-popup.ejs", {}, module);
   return cb();
 }

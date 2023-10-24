@@ -21,6 +21,10 @@ const image = {
         const documentAttributeManager = this.documentAttributeManager;
         documentAttributeManager.setAttributeOnLine(lineNumber, 'img', data);
     },
+    getImage(lineNumber) {
+        const documentAttributeManager = this.documentAttributeManager;
+        return documentAttributeManager.getAttributeOnLine(lineNumber, 'img');
+    }
 };
 
 const prepareOptionElem = function (guid, text, url, isSelected) {
@@ -144,19 +148,259 @@ let addUploadHandler = function () {
     });
 }
 
-let addImageListeners = () => {
+
+const calculatePadInnerPadding = (elem) => {
+    let padding = $(elem).css('padding');
+    padding = padding.split(' ');
+    padding = padding.map(elem => elem.slice(0, -2));
+
+    const calcPadding = {
+        top: 0,
+        left: 0
+    }
+    switch (padding.length) {
+        // e.g. padding: 1px;
+        case 1: {
+            calcPadding.top = padding[0];
+            calcPadding.left = padding[0];
+            break;
+        }
+        // e.g. padding: 1px 2px;
+        case 2 : {
+            calcPadding.top = padding[0];
+            calcPadding.left = padding[1];
+            break;
+        }
+        // e.g. padding: 1px 2px 3px;
+        case 3: {
+            calcPadding.top = padding[0];
+            calcPadding.left = padding[1];
+        }
+        // e.g. padding: 1px 2px 3px 4px;
+        case 4: {
+            calcPadding.top = padding[0];
+            calcPadding.left = padding[4];
+            break;
+        }
+        default: {
+            // console.log('Check this case', $(elem).css('padding'));
+            break;
+        }
+    }
+
+    calcPadding.top = parseInt(calcPadding.top);
+    calcPadding.left = parseInt(calcPadding.left);
+
+    return calcPadding;
+}
+
+let currentImageInteractWith = undefined;
+const showImageResizeDialog = function () {
+
+    // Initialize width and height
+    const width = Math.round($(currentImageInteractWith).width());
+    const height = Math.round($(currentImageInteractWith).height());
+    $('.input.image-width').val(width);
+    $('.input.image-height').val(height);
+    $('.image-resizer-dialog').addClass('popup-show');
+}
+
+const hideImageResizeDialog = function () {
+    currentImageInteractWith = undefined;
+    $('.image-resizer-dialog').removeClass('popup-show');
+};
+
+let addImageListeners = (context) => {
     const padOuter = $('iframe[name="ace_outer"]').contents();
     const padInner = padOuter.find('iframe[name="ace_inner"]');
     padInner.contents().find('img').off();
-    padInner.contents().find('img').on('click', (e)=>{
-        console.log('I feel Lucky here');
+
+    console.log(padInner.contents().find('img'));
+
+    padInner.contents().find('img').on('click', (e) => {
+
+        padInner.contents().on('click', () => {
+            hideImageResizeDialog();
+        });
+
+
+        // console.log('#magicdomid5', padInner.contents().find('#magicdomid5'));
+        //
+        // padInner.contents().find('#magicdomid5')[0].click();
+
+        console.log('Current image resized', e.target);
+        currentImageInteractWith = e.target;
+
+        context.ace.callWithAce((ace) => {
+            console.log('ace.ace_getRep()', ace.ace_getRep());
+        }, 'img', true);
+
+        // console.log('IMAGE', e.target, $(e.target).attr('id'), $(e.target).width(), $(e.target).height());
+
+        // console.log($($(e.target).attr('id')));
+
+        // const id = '#' + $(e.target).attr('id');
+        //
+        // $(id).width(10);
+
+        showImageResizeDialog();
+
+        return false;
+
+        // const img = e.target;
+        //
+        // // console.log(this);
+        //
+        // // console.log('I feel Lucky here');
+        //
+        // // console.log(e.target, e);
+        // // console.log(e.target.getBoundingClientRect());
+        //
+        // const imgRect = e.target.getBoundingClientRect();
+        //
+        // // The extra div will be added in the body of the top level iframe
+        // const topLevelIframe = $('body')[0];
+        // // const innerIframeHtml = padInner.contents().find('html')[0];
+        //
+        // // console.log(topLevelIframe);
+        //
+        // // console.log($('iframe'));
+        //
+        // // console.log(padInner.contents().find('html')[0]);
+        //
+        // // // console.log(innerIframeHtml.getBoundingClientRect());
+        // // console.log($(padInner).css('padding'), calculatePadInnerPadding(padInner));
+        //
+        // const padInnerPadding = calculatePadInnerPadding(padInner);
+        // const resizerFrame = $('<div class="resizer-frame"><div class="resizer"></div></div>');
+        //
+        // // console.log(imgRect.top, padInnerPadding.top, imgRect.top + padInnerPadding.top)
+        // // console.log(imgRect.left, padInnerPadding.left, imgRect.left + padInnerPadding.left)
+        //
+        // resizerFrame.offset({
+        //     'top': imgRect.top + padInnerPadding.top + 78,
+        //     'left': imgRect.left + padInnerPadding.left + 34
+        // });
+        // resizerFrame.width(imgRect.width + 1);
+        // resizerFrame.height(imgRect.height + 1);
+        // $(topLevelIframe).append(resizerFrame);
+        //
+        // $('.resizer').on('mousedown', (e) => {
+        //     initDrag(img, e);
+        // });
+        //
+        // return false;
     });
+
+
+    let startX, startY, startWidth, startHeight;
+
+    function initDrag(img, e) {
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = parseInt(document.defaultView.getComputedStyle(img).width, 10);
+        startHeight = parseInt(document.defaultView.getComputedStyle(img).height, 10);
+
+
+        // console.log(document.documentElement);
+
+        const padOuter = $('iframe[name="ace_outer"]').contents();
+        document.documentElement.addEventListener('mousemove', (e) => {
+            doDrag(img, e);
+        }, false);
+        document.documentElement.addEventListener('mouseup', (e) => {
+            stopDrag(img, e);
+        }, false);
+    }
+
+    function doDrag(img, e) {
+        let imgWidth = startWidth + e.clientX - startX;
+        let imgHeight = startHeight + e.clientY - startY;
+
+        if (imgWidth > 10 && imgHeight > 10) {
+            img.parentElement.classList.add('active');
+
+            img.width = startWidth + e.clientX - startX;
+            img.height = startHeight + e.clientY - startY;
+
+            const resizerFrame = $('.resizer-frame');
+            resizerFrame.width(img.width + 1);
+            resizerFrame.height(img.height + 1);
+        }
+    }
+
+    function stopDrag(img, e) {
+        // handle.replace({width: info.width, height: info.height, src: info.src});
+        img.parentElement.classList.remove('active');
+
+        document.documentElement.removeEventListener('mousemove', (e) => {
+            doDrag(img, e);
+        }, false);
+        document.documentElement.removeEventListener('mouseup', (e) => {
+            stopDrag(img, e);
+
+
+            // console.log('stopDrag', $('.resizer-frame'));
+
+            $('.resizer-frame').remove();
+
+        }, false);
+        // this.codeMirror.refresh();
+    }
+
+
+    $($('body')[0]).on('click', (e) => {
+        // console.log('Here', e, e.target)
+    })
+
+}
+
+
+const _findLine = (ace) => {
+    const rep = ace.ace_getRep();
+
+    // console.log('REP', rep);
+
+    let index = -1;
+    // console.log(rep.lines._keyToNodeMap);
+    // rep.lines._keyToNodeMap.forEach(line => {
+    //     index++;
+    //     if (line.entry.lineNode
+    //         && line.entry.lineNode.firstChild
+    //         && line.entry.lineNode.firstChild.attributes
+    //         && line.entry.lineNode.firstChild.attributes[0]
+    //     ) {
+    //         // console.log(line.entry.lineNode.firstChild.attributes[0].value, line);
+    //         return false;
+    //     } else {
+    //         // console.log('mpaaa', line);
+    //     }
+    // })
+
+    for (const [key, value] of rep.lines._keyToNodeMap) {
+        index++;
+        if (value.entry.lineNode
+            && value.entry.lineNode.firstChild
+            && value.entry.lineNode.firstChild.attributes
+            && value.entry.lineNode.firstChild.attributes[0]
+        ) {
+            // console.log(value.entry.lineNode.firstChild.attributes[0].value, value);
+            break;
+        } else {
+            // console.log('mpaaa', value);
+        }
+    }
+
+    return index;
 }
 
 const _handleNewLines = (ace) => {
     const rep = ace.ace_getRep();
     const lineNumber = rep.selStart[0];
     const curLine = rep.lines.atIndex(lineNumber);
+
+    // console.log('lineNumber', lineNumber, 'curLine', curLine);
+
     if (curLine.text) {
         ace.ace_doReturnKey();
 
@@ -245,6 +489,7 @@ shared.parseWindowEvent(getEvidenceImages);
 
 // Hooks
 exports.aceAttribsToClasses = (name, context) => {
+    // console.log('aceAttribsToClasses', context.value);
 
     if (context.key === 'img') {
         let imgUrl = context.value;
@@ -254,20 +499,40 @@ exports.aceAttribsToClasses = (name, context) => {
         }
 
         const data = JSON.parse(context.value);
-        return [`guid-${data.guid}`, `url-${data.url}`];
+
+        if (!data.localId)
+            data.localId = uuidv4();
+
+        return [`localId-${data.localId}`, `guid-${data.guid}`, `url-${data.url}`, `width-${data.width}`, `height-${data.height}`];
     }
 };
 
+// exports.aceEditEvent = (hook, context) => {
+//     // // console.log(hook, context);
+// }
+
 // Rewrite the DOM contents when an IMG attribute is discovered
 exports.aceDomLineProcessLineAttributes = (name, context) => {
+    // console.log('aceDomLineProcessLineAttributes', context, context.addToLineClass);
 
     const cls = context.cls;
+    let localId = /(?:^| )localId-(\S*)/.exec(cls);
     let guid = /(?:^| )guid-(\S*)/.exec(cls);
     let url = /(?:^| )url-(\S*)/.exec(cls);
+    const width = /(?:^| )width-(\S*)/.exec(cls);
+    const height = /(?:^| )height-(\S*)/.exec(cls);
+
+
     if (!url) return [];
 
     if (url[1]) {
-        const preHtml = `<img src="` + url[1] + `" data-guid="` + guid[1] + `">`;
+        let preHtml;
+        if (width[1]) {
+            // preHtml = `<img id="` + localId[1] + `" src="` + url[1] + `" data-guid="` + guid[1] + `" width="` + parseInt(width[1]) + `" height=` + parseInt(height[1]) + `>`;
+            preHtml = `<img src="` + url[1] + `" data-guid="` + guid[1] + `" width="` + parseInt(width[1]) + `" height=` + parseInt(height[1]) + `>`;
+        } else {
+            preHtml = `<img src="` + url[1] + `" data-guid="` + guid[1] + `">`;
+        }
         const postHtml = '';
         const modifier = {
             preHtml,
@@ -281,22 +546,40 @@ exports.aceDomLineProcessLineAttributes = (name, context) => {
     return [];
 };
 
+
+// exports.acePostWriteDomLineHTML = (name, context) => {
+//     // console.log('acePostWriteDomLineHTML');
+//     // addImageListeners();
+// };
+
+
 exports.aceEditorCSS = () => [
     '/ep_image_upload_weave/static/css/ace.css',
     '/ep_image_upload_weave/static/css/ep_image_upload_weave.css',
 ];
 
 exports.aceInitialized = (hook, context) => {
+
+    // console.log('aceInitialized');
+
     const editorInfo = context.editorInfo;
     editorInfo.ace_addImage = image.addImage.bind(context);
     editorInfo.ace_removeImage = image.removeImage.bind(context);
+    editorInfo.ace_getImage = image.getImage.bind(context);
 
     // showDialog = showDialog.bind(context);
 };
 
 exports.aceRegisterBlockElements = () => ['img'];
 
+
+// exports.aceEndLineAndCharForPoint = (hook, context) => {
+//     // // console.log(hook, context);
+// }
+
 exports.postAceInit = (hook, context) => {
+
+    // console.log('postAceInit');
 
     addUploadHandler();
 
@@ -376,14 +659,93 @@ exports.postAceInit = (hook, context) => {
         };
         data = JSON.stringify(data);
 
+        console.log('context', context);
         context.ace.callWithAce((ace) => {
+            console.log('ace', ace);
+            console.log('ace.ace_getRep()', ace.ace_getRep());
+
             const imageLineNr = _handleNewLines(ace);
             ace.ace_addImage(imageLineNr, data);
             ace.ace_doReturnKey();
         }, 'img', true);
 
-        addImageListeners();
+        addImageListeners(context);
         hideDialog();
     })
+
+    /* Event: User resize image */
+    $('.update-image-resizer-btn').on('click', () => {
+
+        const width = $('.input.image-width').val();
+        const height = $('.input.image-height').val();
+
+        hideImageResizeDialog();
+    });
+
+    /* Event: User resize image cancel */
+    $('.cancel-image-resizer-btn').on('click', () => {
+        hideImageResizeDialog();
+    });
+
+    $('.input.image-width').on('change', (e) => {
+
+        const originalWidth = $(currentImageInteractWith).width();
+        const originalHeight = $(currentImageInteractWith).height();
+        const resizedWidth = parseInt($('.input.image-width').val());
+        let resizedHeight = calculateImageHeight(originalWidth, originalHeight, resizedWidth);
+
+        resizedHeight = Math.round(resizedHeight);
+
+        // console.log(originalWidth, originalHeight, resizedWidth, resizedHeight);
+        $('.input.image-height').val(resizedHeight);
+        // $(currentImageInteractWith).height(resizedHeight);
+
+        context.ace.callWithAce((ace) => {
+            const rep = ace.ace_getRep();
+            const imageLineNr = _findLine(ace);
+            const data = JSON.parse(ace.ace_getImage(imageLineNr) || ace.ace_getImage(imageLineNr + 1) || ace.ace_getImage(imageLineNr - 1));
+            data.width = resizedWidth;
+            data.height = resizedHeight;
+            ace.ace_addImage(imageLineNr, JSON.stringify(data));
+
+        }, 'img', true);
+    });
+
+    $('.input.image-height').on('change', (e) => {
+
+        const originalWidth = $(currentImageInteractWith).width();
+        const originalHeight = $(currentImageInteractWith).height();
+        const resizedHeight = parseInt($('.input.image-height').val());
+        let resizedWidth = calculateImageWidth(originalWidth, originalHeight, resizedHeight);
+
+        resizedWidth = Math.round(resizedWidth);
+        $('.input.image-width').val(resizedWidth);
+        // $(currentImageInteractWith).width(resizedWidth);
+    });
+
+    addImageListeners(context);
+
+    // context.ace.callWithAce((ace) => {
+    //
+    //     let doc = ace.ace_getDocument();
+    //
+    //     $(doc).find('#innerdocbody').on('click', 'img',  (event)=>{
+    //         console.log('Document', doc, event, context, ace.ace_getRep());
+    //     });
+    //
+    // }, 'img', true);
 }
 
+function calculateImageWidth(originalWidth, originalHeight, resizedWidth) {
+    return (originalWidth / originalHeight) * resizedWidth;
+}
+
+function calculateImageHeight(originalWidth, originalHeight, resizedHeight) {
+    return (originalHeight / originalWidth) * resizedHeight;
+}
+
+function uuidv4() {
+    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    );
+}
