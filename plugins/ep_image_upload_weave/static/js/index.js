@@ -194,21 +194,45 @@ const calculatePadInnerPadding = (elem) => {
     return calcPadding;
 }
 
-let currentImageInteractWith = undefined;
+let currentImageInteractWithInfo = undefined;
 const showImageResizeDialog = function () {
 
     // Initialize width and height
-    const width = Math.round($(currentImageInteractWith).width());
-    const height = Math.round($(currentImageInteractWith).height());
+    const width = Math.round(currentImageInteractWithInfo.originalWidth);
+    const height = Math.round(currentImageInteractWithInfo.originalHeight);
     $('.input.image-width').val(width);
     $('.input.image-height').val(height);
     $('.image-resizer-dialog').addClass('popup-show');
 }
 
-const hideImageResizeDialog = function () {
-    currentImageInteractWith = undefined;
+const hideImageResizeDialog = function (context) {
+    currentImageInteractWithInfo = undefined;
     $('.image-resizer-dialog').removeClass('popup-show');
+
+    addImageListeners(context);
 };
+
+
+const findElementsLine = (searchForElementId, element, line) => {
+
+    if (!element) {
+        console.log('WE HAVE PROBLEM');
+    }
+    // console.log('findElementsLine', line, element, element.id);
+
+    // The end of the Nodes' list that means that element searched for was not found!
+    if (!element) {
+        return -1;
+    }
+
+    // Return the line of the found element
+    if (searchForElementId == element.id) {
+        return line;
+    }
+
+    return findElementsLine(searchForElementId, element.nextSibling, ++line);
+}
+
 
 let addImageListeners = (context) => {
     const padOuter = $('iframe[name="ace_outer"]').contents();
@@ -219,29 +243,48 @@ let addImageListeners = (context) => {
 
     padInner.contents().find('img').on('click', (e) => {
 
-        padInner.contents().on('click', () => {
-            hideImageResizeDialog();
+        padInner.contents().on('click', (e) => {
+            hideImageResizeDialog(context);
+        });
+
+        // Set current image element clicked on
+        currentImageInteractWithInfo = {
+            parentDivId: $($(e.target).parent()[0]).attr('id'),
+            originalWidth: $(e.target).width(),
+            originalHeight: $(e.target).height(),
+            line: 0,
+        };
+
+        context.ace.callWithAce((ace) => {
+            // Find the line where this image is located in the pad
+            const startNode = ace.ace_getRep().lines._start.downPtrs[0].entry.lineNode;
+            const parentDivId = currentImageInteractWithInfo.parentDivId;
+            currentImageInteractWithInfo.line = findElementsLine(parentDivId, startNode, 0);
+
+            console.log('Current image resized INFO: ', currentImageInteractWithInfo);
         });
 
 
-        // console.log('#magicdomid5', padInner.contents().find('#magicdomid5'));
+        // const parentDivId = $($(e.target).parent()[0]).attr('id')
+        // console.log('Current image resized', e.target, parentDivId);
         //
-        // padInner.contents().find('#magicdomid5')[0].click();
-
-        console.log('Current image resized', e.target);
-        currentImageInteractWith = e.target;
-
-        context.ace.callWithAce((ace) => {
-            console.log('ace.ace_getRep()', ace.ace_getRep());
-        }, 'img', true);
-
-        // console.log('IMAGE', e.target, $(e.target).attr('id'), $(e.target).width(), $(e.target).height());
-
-        // console.log($($(e.target).attr('id')));
-
-        // const id = '#' + $(e.target).attr('id');
+        // context.ace.callWithAce((ace) => {
+        //     console.log('ace.ace_getRep()', ace.ace_getRep());
         //
-        // $(id).width(10);
+        //     const lines = ace.ace_getRep().lines._keyToNodeMap;
+        //     const startNode = ace.ace_getRep().lines._start.downPtrs[0].entry.lineNode;
+        //     const nextNode = ace.ace_getRep().lines._start.downPtrs[0].entry.lineNode.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling;
+        //     const imageLineNr = findElementsLine(parentDivId, startNode, 0);
+        //
+        //     // console.log('Lines', lines);
+        //     // console.log('Start Node', startNode);
+        //     // console.log('Next Node', nextNode);
+        //     console.log('ΙmageLineNr', imageLineNr);
+        //
+        //     const data = ace.ace_getImage(imageLineNr);
+        //
+        //     console.log('getAttributeOnLine', data);
+        // }, 'img', true);
 
         showImageResizeDialog();
 
@@ -508,7 +551,8 @@ exports.aceAttribsToClasses = (name, context) => {
 };
 
 // exports.aceEditEvent = (hook, context) => {
-//     // // console.log(hook, context);
+//     console.log(hook, context);
+//     addImageListeners(context);
 // }
 
 // Rewrite the DOM contents when an IMG attribute is discovered
@@ -551,7 +595,6 @@ exports.aceDomLineProcessLineAttributes = (name, context) => {
 //     // console.log('acePostWriteDomLineHTML');
 //     // addImageListeners();
 // };
-
 
 exports.aceEditorCSS = () => [
     '/ep_image_upload_weave/static/css/ace.css',
@@ -679,48 +722,50 @@ exports.postAceInit = (hook, context) => {
         const width = $('.input.image-width').val();
         const height = $('.input.image-height').val();
 
-        hideImageResizeDialog();
+        hideImageResizeDialog(context);
     });
 
     /* Event: User resize image cancel */
     $('.cancel-image-resizer-btn').on('click', () => {
-        hideImageResizeDialog();
+        // Reset image to initial width and height
+        updateImageAttributes(
+            currentImageInteractWithInfo.line,
+            currentImageInteractWithInfo.originalWidth,
+            currentImageInteractWithInfo.originalHeight,
+            context
+        );
+
+        hideImageResizeDialog(context);
     });
 
     $('.input.image-width').on('change', (e) => {
-
-        const originalWidth = $(currentImageInteractWith).width();
-        const originalHeight = $(currentImageInteractWith).height();
         const resizedWidth = parseInt($('.input.image-width').val());
-        let resizedHeight = calculateImageHeight(originalWidth, originalHeight, resizedWidth);
+        let resizedHeight = calculateImageHeight(
+            currentImageInteractWithInfo.originalWidth,
+            currentImageInteractWithInfo.originalHeight,
+            resizedWidth
+        );
 
+        // Set height based on image ratio
         resizedHeight = Math.round(resizedHeight);
-
-        // console.log(originalWidth, originalHeight, resizedWidth, resizedHeight);
         $('.input.image-height').val(resizedHeight);
-        // $(currentImageInteractWith).height(resizedHeight);
 
-        context.ace.callWithAce((ace) => {
-            const rep = ace.ace_getRep();
-            const imageLineNr = _findLine(ace);
-            const data = JSON.parse(ace.ace_getImage(imageLineNr) || ace.ace_getImage(imageLineNr + 1) || ace.ace_getImage(imageLineNr - 1));
-            data.width = resizedWidth;
-            data.height = resizedHeight;
-            ace.ace_addImage(imageLineNr, JSON.stringify(data));
-
-        }, 'img', true);
+        updateImageAttributes(currentImageInteractWithInfo.line, resizedWidth, resizedHeight, context);
     });
 
     $('.input.image-height').on('change', (e) => {
-
-        const originalWidth = $(currentImageInteractWith).width();
-        const originalHeight = $(currentImageInteractWith).height();
         const resizedHeight = parseInt($('.input.image-height').val());
-        let resizedWidth = calculateImageWidth(originalWidth, originalHeight, resizedHeight);
+        let resizedWidth = calculateImageWidth(
+            currentImageInteractWithInfo.originalWidth,
+            currentImageInteractWithInfo.originalHeight,
+            resizedHeight
+        );
 
+        // Set width based on image ratio
         resizedWidth = Math.round(resizedWidth);
         $('.input.image-width').val(resizedWidth);
-        // $(currentImageInteractWith).width(resizedWidth);
+
+        updateImageAttributes(currentImageInteractWithInfo.line, resizedWidth, resizedHeight, context);
     });
 
     addImageListeners(context);
@@ -734,6 +779,27 @@ exports.postAceInit = (hook, context) => {
     //     });
     //
     // }, 'img', true);
+}
+
+function updateImageAttributes(line, setWidth, setHeight, context) {
+    context.ace.callWithAce((ace) => {
+        // const lines = ace.ace_getRep().lines._keyToNodeMap;
+        // const startNode = ace.ace_getRep().lines._start.downPtrs[0].entry.lineNode;
+        // const nextNode = ace.ace_getRep().lines._start.downPtrs[0].entry.lineNode.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling;
+        // console.log('ace.ace_getRep()', ace.ace_getRep());
+        // console.log('Lines', lines);
+        // console.log('Start Node', startNode);
+        // console.log('Next Node', nextNode);
+        // console.log('ΙmageLineNr', currentImageInteractWithInfo.line);
+
+        const data = JSON.parse(ace.ace_getImage(line));
+        console.log('getAttributeOnLine', data);
+
+        data.width = setWidth;
+        data.height = setHeight;
+        ace.ace_addImage(line, JSON.stringify(data));
+
+    }, 'img', true);
 }
 
 function calculateImageWidth(originalWidth, originalHeight, resizedWidth) {
