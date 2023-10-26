@@ -183,7 +183,7 @@ const calculatePadInnerPadding = (elem) => {
             break;
         }
         default: {
-            // console.log('Check this case', $(elem).css('padding'));
+            console.log('Check this case', $(elem).css('padding'));
             break;
         }
     }
@@ -239,7 +239,7 @@ let addImageListeners = (context) => {
     const padInner = padOuter.find('iframe[name="ace_inner"]');
     padInner.contents().find('img').off();
 
-    console.log(padInner.contents().find('img'));
+    console.log('padInner.contents().find(\'img\')', padInner.contents().find('img'));
 
     padInner.contents().find('img').on('click', (e) => {
 
@@ -252,6 +252,8 @@ let addImageListeners = (context) => {
             parentDivId: $($(e.target).parent()[0]).attr('id'),
             originalWidth: $(e.target).width(),
             originalHeight: $(e.target).height(),
+            top: $(e.target).offset().top,
+            left: $(e.target).offset().left,
             line: 0,
         };
 
@@ -264,131 +266,71 @@ let addImageListeners = (context) => {
             console.log('Current image resized INFO: ', currentImageInteractWithInfo);
         });
 
-
-        // const parentDivId = $($(e.target).parent()[0]).attr('id')
-        // console.log('Current image resized', e.target, parentDivId);
-        //
-        // context.ace.callWithAce((ace) => {
-        //     console.log('ace.ace_getRep()', ace.ace_getRep());
-        //
-        //     const lines = ace.ace_getRep().lines._keyToNodeMap;
-        //     const startNode = ace.ace_getRep().lines._start.downPtrs[0].entry.lineNode;
-        //     const nextNode = ace.ace_getRep().lines._start.downPtrs[0].entry.lineNode.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling;
-        //     const imageLineNr = findElementsLine(parentDivId, startNode, 0);
-        //
-        //     // console.log('Lines', lines);
-        //     // console.log('Start Node', startNode);
-        //     // console.log('Next Node', nextNode);
-        //     console.log('ΙmageLineNr', imageLineNr);
-        //
-        //     const data = ace.ace_getImage(imageLineNr);
-        //
-        //     console.log('getAttributeOnLine', data);
-        // }, 'img', true);
-
         showImageResizeDialog();
-
         return false;
 
-        // const img = e.target;
-        //
-        // // console.log(this);
-        //
-        // // console.log('I feel Lucky here');
-        //
-        // // console.log(e.target, e);
-        // // console.log(e.target.getBoundingClientRect());
-        //
-        // const imgRect = e.target.getBoundingClientRect();
-        //
         // // The extra div will be added in the body of the top level iframe
         // const topLevelIframe = $('body')[0];
-        // // const innerIframeHtml = padInner.contents().find('html')[0];
-        //
-        // // console.log(topLevelIframe);
-        //
-        // // console.log($('iframe'));
-        //
-        // // console.log(padInner.contents().find('html')[0]);
-        //
-        // // // console.log(innerIframeHtml.getBoundingClientRect());
-        // // console.log($(padInner).css('padding'), calculatePadInnerPadding(padInner));
-        //
         // const padInnerPadding = calculatePadInnerPadding(padInner);
         // const resizerFrame = $('<div class="resizer-frame"><div class="resizer"></div></div>');
-        //
-        // // console.log(imgRect.top, padInnerPadding.top, imgRect.top + padInnerPadding.top)
-        // // console.log(imgRect.left, padInnerPadding.left, imgRect.left + padInnerPadding.left)
-        //
         // resizerFrame.offset({
-        //     'top': imgRect.top + padInnerPadding.top + 78,
-        //     'left': imgRect.left + padInnerPadding.left + 34
+        //     'top': currentImageInteractWithInfo.top + padInnerPadding.top + 78,
+        //     'left': currentImageInteractWithInfo.left + padInnerPadding.left + 34
         // });
-        // resizerFrame.width(imgRect.width + 1);
-        // resizerFrame.height(imgRect.height + 1);
+        // resizerFrame.width(currentImageInteractWithInfo.originalWidth + 1);
+        // resizerFrame.height(currentImageInteractWithInfo.originalHeight + 1);
         // $(topLevelIframe).append(resizerFrame);
         //
         // $('.resizer').on('mousedown', (e) => {
-        //     initDrag(img, e);
+        //     initDrag(e, context);
         // });
         //
         // return false;
     });
 
-
-    let startX, startY, startWidth, startHeight;
-
-    function initDrag(img, e) {
-        startX = e.clientX;
-        startY = e.clientY;
-        startWidth = parseInt(document.defaultView.getComputedStyle(img).width, 10);
-        startHeight = parseInt(document.defaultView.getComputedStyle(img).height, 10);
-
-
-        // console.log(document.documentElement);
+    function initDrag(e, context) {
+        currentImageInteractWithInfo.startX = e.clientX;
+        currentImageInteractWithInfo.startY = e.clientY;
 
         const padOuter = $('iframe[name="ace_outer"]').contents();
         document.documentElement.addEventListener('mousemove', (e) => {
-            doDrag(img, e);
+            doDrag(e, context);
         }, false);
         document.documentElement.addEventListener('mouseup', (e) => {
-            stopDrag(img, e);
+            stopDrag(e, context);
         }, false);
     }
 
-    function doDrag(img, e) {
-        let imgWidth = startWidth + e.clientX - startX;
-        let imgHeight = startHeight + e.clientY - startY;
+    function doDrag(e, context) {
+        let newImgWidth = currentImageInteractWithInfo.originalWidth + e.clientX - currentImageInteractWithInfo.startX;
+        let newImgHeight = currentImageInteractWithInfo.originalHeight + e.clientY - currentImageInteractWithInfo.startY;
 
-        if (imgWidth > 10 && imgHeight > 10) {
-            img.parentElement.classList.add('active');
+        if (newImgWidth > 10 && newImgHeight > 10) {
+            // img.parentElement.classList.add('active');
+            // img.width = newImgWidth;
+            // img.height = newImgHeight;
 
-            img.width = startWidth + e.clientX - startX;
-            img.height = startHeight + e.clientY - startY;
+            updateImageAttributes(currentImageInteractWithInfo.line, newImgWidth, newImgHeight, context);
 
             const resizerFrame = $('.resizer-frame');
-            resizerFrame.width(img.width + 1);
-            resizerFrame.height(img.height + 1);
+            resizerFrame.width(newImgWidth + 2);
+            resizerFrame.height(newImgHeight + 2);
         }
     }
 
-    function stopDrag(img, e) {
+    function stopDrag(e, context) {
         // handle.replace({width: info.width, height: info.height, src: info.src});
-        img.parentElement.classList.remove('active');
+        // img.parentElement.classList.remove('active');
 
         document.documentElement.removeEventListener('mousemove', (e) => {
-            doDrag(img, e);
+            doDrag(e, context);
         }, false);
         document.documentElement.removeEventListener('mouseup', (e) => {
-            stopDrag(img, e);
-
-
-            // console.log('stopDrag', $('.resizer-frame'));
-
-            $('.resizer-frame').remove();
-
+            stopDrag(e, context);
         }, false);
-        // this.codeMirror.refresh();
+
+        const topLevelIframe = $('body')[0];
+        $(topLevelIframe).find('.resizer-frame').remove();
     }
 
 
